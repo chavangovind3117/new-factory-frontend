@@ -27,6 +27,7 @@ import {
   fetchLandIdDetails,
   fetchCrops,
   fetchFieldOverseers,
+  createFieldSurvey,
 } from "../utils/apiService";
 import { useToast } from "react-native-toast-notifications";
 import Dropdown from "../components/DropDown";
@@ -50,12 +51,12 @@ const FieldOverseer = ({ navigation }) => {
   const [villageList, setVillageList] = useState([]);
   const [growerList, setGrowerList] = useState([]);
   const [growers, setGrowers] = useState([]);
-  const [landIDs, setLandIDs] = useState([]);
-  const [landID, setLandID] = useState("");
+  // const [landIDs, setLandIDs] = useState([]);
+  // const [landID, setLandID] = useState("");
   const [landDetails, setLandDetails] = useState("");
   const [crops, setCrops] = useState([]);
-  const [photos, setPhotos] = useState([]);
-  const [addMoreLand, setAddMoreLand] = useState(false);
+  // const [photos, setPhotos] = useState([]);
+  // const [addMoreLand, setAddMoreLand] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
 
   const { totalArea, coordinates } = formState;
@@ -272,231 +273,97 @@ const FieldOverseer = ({ navigation }) => {
     loadGrowers();
   }, []);
 
-  // useEffect(() => {
-  //   if (growerCode) {
-  //     const loadLandIDs = async () => {
-  //       let id = toast.show("Loading...");
-  //       try {
-  //         const data = await fetchLandIDs(growerCode);
-  //         {
-  //           data && setLandIDs(data);
-  //         }
-  //       } catch (error) {
-  //         toast.show("Failed to fetch land IDs.", { type: "danger" });
-  //       } finally {
-  //         toast.hide(id);
-  //       }
-  //     };
-
-  //     loadLandIDs();
-  //   }
-  // }, [growerCode]); // ✅ Fetch Land IDs when `growerID` changes
-
-  // useEffect(() => {
-  //   if (landID) {
-  //     const loadLandDetails = async () => {
-  //       let id = toast.show("Loading...");
-  //       try {
-  //         const data = await fetchLandIdDetails(growerCode, landID);
-  //         if (!data || data.length === 0) throw new Error("No data received");
-
-  //         setLandDetails(data[0]);
-  //         setCropType(data[0].CropType);
-  //         setCropCategory(data[0].CropCategory);
-
-  //         setCoordinates(data[0].Coordinates);
-
-  //         setTotalArea({
-  //           hectare: data[0].TotalAreaInHectare || 0,
-  //           acre: data[0].TotalAreaInAcre || 0,
-  //           gunta: data[0].TotalAreaInGunta || 0,
-  //           sqft: data[0].TotalAreaInGunta * 1089 || 0,
-  //         });
-
-  //         console.log("Fetched Land Details:", data);
-  //         console.log("New Crop Type:", data[0].CropType);
-  //         console.log("New Crop Category:", data[0].CropCategory);
-  //         console.log("Updated Total Area:", totalArea);
-  //         console.log("fetched coordinates :", data[0].Coordinates);
-  //       } catch (error) {
-  //         toast.show("Failed to fetch land details.", { type: "danger" });
-  //       } finally {
-  //         toast.hide(id);
-  //       }
-  //     };
-
-  //     loadLandDetails();
-  //   }
-  // }, [landID]); // ✅ Fetch Land Details when both `growerID` & `landID` change
-
-  // const handlePickPhoto = async () => {
-  //   let id = toast.show("Loading...");
-  //   const result = await pickPhoto(
-  //     photos,
-  //     setPhotos,
-  //     calculateLandArea,
-  //     setTotalArea
-  //   );
-  //   if (!result.success) {
-  //     toast.show(result.message, { type: "danger" });
-  //   }
-  //   toast.hide(id);
-  // };
-
-  // const buildPayload = (
-  //   growerCode,
-  //   fieldOverseerName,
-  //   cropType,
-  //   cropHealth,
-  //   cropStage,
-  //   gutCode,
-  //   expectedWeight,
-  //   cropCategory,
-  //   factoryMember,
-  //   totalArea,
-  //   coordinates,
-  //   circleID,
-  //   circleName
-  // ) => ({
-  //   growerCode,
-  //   fieldOverseerName,
-  //   cropType,
-  //   cropCategory,
-  //   cropHealth,
-  //   cropStage,
-  //   gutCode,
-  //   expectedWeight,
-  //   factoryMember,
-
-  //   totalAreaInHectare: parseFloat(totalArea.hectare),
-  //   totalAreaInAcre: parseFloat(totalArea.acre),
-  //   totalAreaInGunta: parseFloat(totalArea.gunta),
-
-  //   coordinates,
-  //   circleID,
-  //   circleName,
-  // });
-
-  // const clearFormData = () => {
-  //   updateForm({
-  //     circleID: "",
-  //     circleName: "",
-  //     gutCode: "",
-  //     villageName: "",
-  //     villageCode: "",
-  //     growerName: "",
-  //     growerCode: "",
-  //     cropType: "",
-  //     cropCategory: "",
-  //     cropHealth: "",
-  //     cropStage: "",
-  //     expectedWeight: "",
-  //     factoryMember: "",
-  //     totalArea: {
-  //       hectare: 0,
-  //       acre: 0,
-  //       gunta: 0,
-  //       sqft: 0,
-  //     },
-  //     coordinates: null,
-  //   });
-
-  //   setPhotos([]);
-  //   setAddMoreLand(false);
-  // };
+  const payload = {
+    userID: formState.userID,
+    fieldOverseerName: formState.fieldOverseerName,
+    circleID: formState.circleID,
+    gutCode: formState.gutCode,
+    villageCode: formState.villageCode,
+    growerCode: formState.growerCode,
+    cropType: formState.cropType,
+    cropCategory: formState.cropCategory,
+    expectedWeight: formState.expectedWeight,
+    factoryMember: formState.factoryMember,
+    totalAreaInHectare: totalArea?.hectare || 0,
+    coordinates,
+  };
 
   const handleSubmit = async () => {
-    console.log("Add more land : ", addMoreLand);
-
-    const payload = buildPayload(
-      formState.growerCode,
-      formState.fieldOverseerName,
-      formState.cropType,
-      formState.cropHealth,
-      formState.cropStage,
-      formState.gutCode,
-      formState.expectedWeight,
-      formState.cropCategory,
-      formState.factoryMember,
-      totalArea,
-      coordinates,
-      formState.circleID,
-      formState.circleName
-    );
-
-    console.log("payload", payload);
-
+    console.log("inside handlesubmit ...", payload);
     if (
+      !formState.userID ||
+      !formState.circleID ||
+      !formState.gutCode ||
+      !formState.villageCode ||
       !formState.growerCode ||
-      !formState.fieldOverseerName ||
       !formState.cropType ||
       !formState.cropCategory ||
-      !formState.cropHealth ||
-      !formState.cropStage ||
-      !formState.factoryMember ||
-      !totalArea?.hectare ||
-      !totalArea?.acre ||
-      !totalArea?.gunta ||
-      !formState.gutCode ||
-      !formState.expectedWeight
+      !formState.expectedWeight ||
+      !coordinates ||
+      coordinates.length < 3
     ) {
-      toast.show("Complete all fields before submitting.", { type: "danger" });
+      toast.show("Please fill all required fields", { type: "danger" });
       return;
     }
 
-    let id = toast.show("Updating Details...");
+    let toastId = toast.show("Saving field survey...");
+
     try {
-      const response = await fetch(
-        `${IP_ADDRESS}/api/land-details/update/${landID}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json", // Correct Content-Type for JSON payload
-          },
-          body: JSON.stringify(payload), // Send payload as JSON
-        }
-      );
+      await createFieldSurvey(payload);
 
-      if (!response.ok) {
-        throw new Error("Failed to update Land details.");
-      }
+      toast.show("Field survey saved successfully ✅", {
+        type: "success",
+      });
 
-      const data = await response.json();
-      console.log("Response Data:", data);
-      toast.show("Grower details updated successfully!", { type: "success" });
-      // console.log("printing ids: ", growerID, userID, growerName)
-      console.log("add more land ; ", addMoreLand);
-      if (!addMoreLand) {
-        navigation.navigate("GenerateSlip", {
-          growerCode: formState.growerCode,
-          growerName: formState.growerName,
-          userID: formState.userID,
-        });
-      }
+      resetForm();
 
-      // Clear form and photo after successful submission
-      // clearFormData();
+      setModalVisible(false);
     } catch (error) {
-      console.error("Error:", error);
-      toast.show("Failed to submit grower details.", { type: "danger" });
+      console.error("Save error:", error);
+      toast.show("Failed to save field survey ❌", {
+        type: "danger",
+      });
     } finally {
-      clearFormData();
-      toast.hide(id);
+      toast.hide(toastId);
     }
+  };
+
+  const resetForm = () => {
+    updateForm({
+      // keep logged-in user + overseer
+      userID: formState.userID,
+      fieldOverseerName: formState.fieldOverseerName,
+
+      // reset selection fields
+      circleName: "",
+      circleID: "",
+      gutCode: "",
+      villageName: "",
+      villageCode: "",
+      growerName: "",
+      growerCode: "",
+
+      cropType: "",
+      cropCategory: "",
+      expectedWeight: "",
+      factoryMember: "",
+
+      // reset map + area
+      totalArea: {
+        hectare: 0,
+        acre: 0,
+        gunta: 0,
+        sqft: 0,
+      },
+      coordinates: [],
+    });
   };
 
   const handleOpenModal = () => setModalVisible(true);
   const handleCloseModal = () => setModalVisible(false);
 
   const handleConfirm = () => {
-    // navigation.navigate("GrowerProfile");
-    // navigation.navigate("GenerateSlip");
-    console.log(
-      "printing ids: ",
-      formState.growerCode,
-      userID,
-      formState.growerName
-    );
+    console.log("inside handle comfirm : ");
     handleSubmit();
     console.log("Confirmed! Submitting data...");
     // Add your submit logic here
@@ -576,22 +443,6 @@ const FieldOverseer = ({ navigation }) => {
         selectedValue={formState.growerName}
         onSelect={handleSelectGrower}
       />
-
-      {/*{/* View/Edit Grower Info 
-      <CustomEditButton title="View/Edit Grower Info" onPress={handleNavigate} />*/}
-
-      {/* Land ID Picker */}
-      {/* <Dropdown
-        label="Select Land ID /शेती आयडी निवडा"
-        items={landIDs.map((g) => ({
-          label: "Grower Land ID__" + g.LandID,
-          value: g.LandID,
-          key: g.LandID,
-        }))}
-        placeholder="Select Land ID"
-        selectedValue={landID}
-        onSelect={setLandID}
-      /> */}
 
       {/* Crop Type Picker */}
       <Dropdown
@@ -675,6 +526,7 @@ const FieldOverseer = ({ navigation }) => {
       <InputField
         label="Expected Weight/Tonnage (किलोमध्ये अपेक्षित वजन)"
         placeholder="Expected Weight"
+        keyboardType="numeric"
         value={formState.expectedWeight}
         onChangeText={(text) => updateForm({ expectedWeight: text })}
       />

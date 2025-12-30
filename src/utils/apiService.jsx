@@ -159,6 +159,28 @@ export const fetchGrowersByVillageCode = async (villageCode) => {
 };
 
 // ********************************************************************************************************
+//                                      Crete Field Survay Record
+// ********************************************************************************************************
+
+export const createFieldSurvey = async (payload) => {
+  console.log("Creating field survey with payload:", payload);
+  const response = await fetch(`${IP_ADDRESS}/api/field/create-survey`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || "Failed to save field survey");
+  }
+
+  return response.json();
+};
+
+// ********************************************************************************************************
 //                                      Get PlantationFarm data By Grower Code
 // ********************************************************************************************************
 export const fetchPlantationFarmByGrowerCode = async (growerCode) => {
